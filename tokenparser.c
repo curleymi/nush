@@ -23,21 +23,32 @@ void push_command_token(strvec* svec, const char* command, int len) {
     }
 }
 
+// shifts the characters back in the command by the given length
+void shift_back(char* command, int len) {
+    int i = len;
+    while (command[i]) {
+        command[i - len] = command[i];
+        i++;
+    }
+    command[i - len] = 0;
+}
+
 // new lines will be ignored if preceeded by a backslash, necessary
 // if user intends newline as white space and not a termination case
-void remove_ignored_newlines(char* command) {
-    int i = 0;
-    while (command[i]) {
-        if (command[i] == '\\' && command[i + 1] == '\n') {
-            // shift all characters left 2, removing the backslash and new line char
-            int j = i + 2;
-            while (command[j]) {
-                command[j - 2] = command[j];
-                j++;
+void process_special_characters(char* command) {
+    // iterate over all characters
+    while (*command) {
+        if (*command == '\\') {
+            switch (*(command + 1)) {
+                case '\\':
+                    shift_back(command, 1);
+                    break;
+                case '\n':
+                    shift_back(command, 2);
+                    break;
             }
-            command[j - 2] = 0;
         }
-        i++;
+        command++;
     }
 }
 

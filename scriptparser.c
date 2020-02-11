@@ -49,8 +49,8 @@ char* parse_script(char* fileName) {
         // null terminate the string
         file[totalLen] = 0;
 
-        // remove ignored newlines
-        remove_ignored_newlines(file);
+        // process special characters like newlines and '\\'
+        process_special_characters(file);
     }
     else {
         printf("error opening %s\n", fileName);

@@ -13,7 +13,7 @@
 // only accounts for operators: < > | & || && ; () ""
 int parse_tokens(strvec* svec, char* command);
 
-// removes newline chars preceeded by a backslash char
-void remove_ignored_newlines(char* command);
+// processes special characters
+void process_special_characters(char* command);
 
 #endif

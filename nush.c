@@ -100,12 +100,12 @@ int main(int argc, char* argv[]) {
     }
     // no special instructions, execute normal shell operation
     else {
-        struct passwd *pw;
-        int uwdlen;
-        int pwdlen;
         char command[MAX_COMMAND_LEN];
         char pwd[MAX_PWD_LEN];
         int offset = 0;
+        struct passwd* pw = getpwuid(getuid());
+        int uwdlen = pw ? strlen(pw->pw_dir) : 0;
+        int pwdlen;
         
         // loop forever
         for (;;) {
@@ -116,13 +116,14 @@ int main(int argc, char* argv[]) {
             }
             else {
                 // print the pwd in blue if no error getting pwd, then the nush prompt normally 
-                if (getcwd(pwd, MAX_PWD_LEN) && (pw = getpwuid(getuid()))) {
+                if (getcwd(pwd, MAX_PWD_LEN) && uwdlen) {
                     // set the length values for conditionally printing the pwd
-                    uwdlen = strlen(pw->pw_dir);
                     pwdlen = strlen(pwd);
                     
                     // replace user working directory with "~" if length permits
-                    printf("%s%s%s ", BLUE_CONSOLE_TEXT, pwdlen >= uwdlen ? "~" : "", pwd + (pwdlen >= uwdlen ? uwdlen : 0));
+                    printf("%s%s%s ", BLUE_CONSOLE_TEXT,
+                            pwdlen >= uwdlen ? "~" : "",
+                            pwd + (pwdlen >= uwdlen ? uwdlen : 0));
                 }
                 printf("%snush$ ", NORM_CONSOLE_TEXT);
             }
@@ -132,19 +133,19 @@ int main(int argc, char* argv[]) {
                 break;
             }
             
-            // check if command is terminated by newline, if the command ends
-            // with a backslash then newline keep reading
+            // process speacial characters like newlines and '\\'
+            process_special_characters(command + offset);
+            
+            // get the length of the command, if it is not terminated by a
+            // newline keep reading
             offset = strlen(command);
-            if (command[offset - 2] == '\\' && command[offset - 1] != 'n') {
-                offset -= 2;
-                continue;
+            if (offset < 1 || command[offset - 1] == '\n') {
+                // process the input
+                retcode = process_command(svec, command);
+            
+                // command is terminated by newline
+                offset = 0;
             }
-
-            // command is terminated by newline
-            offset = 0;
-
-            // process the input
-            retcode = process_command(svec, command);
         }
 
         // print new line after eof
