@@ -23,16 +23,6 @@ void push_command_token(strvec* svec, const char* command, int len) {
     }
 }
 
-// shifts the characters back in the command by the given length
-void shift_back(char* command, int len) {
-    int i = len;
-    while (command[i]) {
-        command[i - len] = command[i];
-        i++;
-    }
-    command[i - len] = 0;
-}
-
 // new lines will be ignored if preceeded by a backslash, necessary
 // if user intends newline as white space and not a termination case
 void process_special_characters(char* command) {
@@ -41,10 +31,10 @@ void process_special_characters(char* command) {
         if (*command == '\\') {
             switch (*(command + 1)) {
                 case '\\':
-                    shift_back(command, 1);
+                    shift_command_back(command, 1);
                     break;
                 case '\n':
-                    shift_back(command, 2);
+                    shift_command_back(command, 2);
                     break;
             }
         }
@@ -64,7 +54,7 @@ int parse_tokens(strvec* svec, char* command) {
     while (!null_str(command)) {
         // clear leading white space
         if (leading_whitespace(command)) {
-            command++;
+            command += 1;
         }
         // if the next token is a double quote get its entire contents as one token
         else if (doub_quot_str(command)) {
@@ -78,7 +68,7 @@ int parse_tokens(strvec* svec, char* command) {
         // if the next token is a single char operator push it
         else if (single_char_op_token(command)) {
             push_command_token(svec, command, 1);
-            command++;
+            command += 1;
         }
         // if the next token is a double char operator push it
         else if (double_char_op_token(command)) {

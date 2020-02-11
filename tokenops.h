@@ -52,16 +52,19 @@ int single_char_op_token(const char* command);
 // returns if the start of the given string is a double char operator
 int double_char_op_token(const char* command);
 
+// shifts the characters back in the command by the given length
+void shift_command_back(char* command, int len);
+
 // returns the length of the given string until the next whitespace,
-// null or operator char(s)
-int parse_non_op_token_len(const char* command);
+// null or operator char(s), skips over special characters
+int parse_non_op_token_len(char* command);
 
 // returns the length of the given string from the first open paren to its
 // corresponding closing paren
-int parse_paren_len(const char* command);
+int parse_paren_len(char* command);
 
 // returns the length of the given string from the first open quote to its
 // corresponding closing quote
-int parse_doub_quot_len(const char* command);
+int parse_doub_quot_len(char* command);
 
 #endif

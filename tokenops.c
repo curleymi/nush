@@ -98,16 +98,34 @@ int double_char_op_token(const char* command) {
         parse_op_token_and(command);
 }
 
+// shifts the characters back in the command by the given length
+void shift_command_back(char* command, int len) {
+    int i = len;
+    while (command[i]) {
+        command[i - len] = command[i];
+        i++;
+    }
+    command[i - len] = 0;
+}
+
 // returns the length of the given string until the next whitespace,
-// null or operator char(s)
-int parse_non_op_token_len(const char* command) {
+// null or operator char(s), skips over special characters
+int parse_non_op_token_len(char* command) {
     // keep incrementing length until end of command, whitespace,
     // single char operator or double char operator
     int len = 0;
-    while (!null_str(command + len) &&
-            !leading_whitespace(command + len) &&
-            !single_char_op_token(command + len) &&
-            !double_char_op_token(command + len)) {
+    while (!null_str(command + len)) {
+        // skip over special chars
+        if (command[len] == '\\') {
+            shift_command_back(command + len, 1);
+        }
+        // check for delimiting characters, if found break
+        else if (leading_whitespace(command + len) ||
+            single_op(command + len, '\"') ||
+            single_char_op_token(command + len) ||
+            double_char_op_token(command + len)) {
+            break;
+        }
         len++;
     }
 
@@ -116,7 +134,7 @@ int parse_non_op_token_len(const char* command) {
 
 // returns the length of the string until a closing paren is found
 // if null str or new line is found before close returns idx -1
-int parse_paren_len(const char* command) {
+int parse_paren_len(char* command) {
     if (!open_paren(command)) {
         return -1;
     }
@@ -151,7 +169,7 @@ int parse_paren_len(const char* command) {
 }
 
 // returns the length of the string to the corresponding closing double quote
-int parse_doub_quot_len(const char* command) {
+int parse_doub_quot_len(char* command) {
     if (!doub_quot_str(command)) {
         return -1;
     }
